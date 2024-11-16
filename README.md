@@ -24,7 +24,7 @@
 
 -  **train_SVM.py**：训练SVM模型并保存为svm_model.pkl
 
--  **predict.py**：调用模型得到判断结果，数据输入为packet_rate, byte_rate(调用get_flows_rate()获得)
+-  **predict.py**：调用模型得到判断结果
 
 -  **data.csv**：数据集，当前数据比较不真实，正常流量为1-2台主机ping，非正常流量为1-2台主机ping -f。等http服务和DDoS攻击功能实现后可以重新构建数据集训练
 
