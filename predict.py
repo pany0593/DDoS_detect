@@ -1,11 +1,15 @@
 import joblib
 
+from get_flows_rate import get_flows_rate
+
 # 1. 加载模型
 svm_model = joblib.load('svm_model.pkl')  # 加载保存的模型
 
 
 # 2. 定义预测函数
-def predict(input_features):
+def predict():
+    packet_rate, byte_rate = get_flows_rate()
+    input_features = [packet_rate, byte_rate]  # 替换为你要预测的特征
     prediction = svm_model.predict([input_features])
     if prediction[0] == 0:
         return "正常"
@@ -14,7 +18,4 @@ def predict(input_features):
 
 
 if __name__ == "__main__":
-    # 3. 测试新数据
-    new_data = [1480.1577216036608, 145055.45671715876]  # 替换为你要预测的新输入特征
-    result = predict(new_data)
-    print(f"输入特征 {new_data} 的预测结果是: {result}")
+    print(f"当前{predict()}")
