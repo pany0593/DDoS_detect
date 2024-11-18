@@ -1,6 +1,10 @@
 - **使用环境**：
 
-  - mininet中至少有一台switch
+  - mininet启动脚本
+
+    ```
+    sudo python3 topo_of10.py
+    ```
 
   - ryu运行
 
