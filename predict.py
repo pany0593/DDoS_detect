@@ -7,8 +7,8 @@ svm_model = joblib.load('svm_model.pkl')  # 加载保存的模型
 
 
 # 2. 定义预测函数
-def predict():
-    packet_rate, byte_rate = get_flows_rate()
+def predict(swtid):
+    packet_rate, byte_rate = get_flows_rate(swtid)
     input_features = [packet_rate, byte_rate]  # 替换为你要预测的特征
     prediction = svm_model.predict([input_features])
     if prediction[0] == 0:
@@ -18,4 +18,4 @@ def predict():
 
 
 if __name__ == "__main__":
-    print(f"当前{predict()}")
+    print(f"当前{predict(1)}")
