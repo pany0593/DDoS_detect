@@ -13,14 +13,17 @@ def get_aggregate_flow(swtid):
             try:
                 # 解析 JSON 数据
                 data = response.json()
-                # 提取 packet_count 和 byte_count
-                if "1" in data and isinstance(data["1"], list) and len(data["1"]) > 0:
-                    packet_count = data["1"][0].get("packet_count", 0)
-                    byte_count = data["1"][0].get("byte_count", 0)
-                    return packet_count, byte_count
-                else:
-                    print("返回的数据格式不符合预期：", data)
-                    return None, None
+                # 遍历返回的 key-value 对，查找包含 packet_count 和 byte_count 的项
+                for key, value in data.items():
+                    if isinstance(value, list) and len(value) > 0:
+                        flow_data = value[0]
+                        if "packet_count" in flow_data and "byte_count" in flow_data:
+                            packet_count = flow_data["packet_count"]
+                            byte_count = flow_data["byte_count"]
+                            return packet_count, byte_count
+                # 如果没有找到符合条件的数据
+                print("返回的数据中没有找到 packet_count 和 byte_count 的项：", data)
+                return None, None
             except json.JSONDecodeError:
                 print("响应不是有效的 JSON 格式：", response.text)
                 return None, None
@@ -53,4 +56,4 @@ def get_flows_rate(swtid):
 
 
 if __name__ == "__main__":
-    get_flows_rate(1)
+    get_flows_rate(2)

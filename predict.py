@@ -18,4 +18,4 @@ def predict(swtid):
 
 
 if __name__ == "__main__":
-    print(f"当前{predict(1)}")
+    print(f"当前{predict(2)}")
