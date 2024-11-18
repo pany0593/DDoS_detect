@@ -55,7 +55,8 @@ def get_output_and_in_ports(swtid):
                                 current_packet_counts[flow_id] = packet_count
 
                                 # 如果是新项或 packet_count 增加
-                                if flow_id not in previous_packet_counts or packet_count > previous_packet_counts[flow_id]:
+                                if flow_id not in previous_packet_counts or packet_count > previous_packet_counts[
+                                    flow_id]:
                                     results.append({"in_port": in_port, "output": output_value})
 
                 # 更新全局的 previous_packet_counts
@@ -71,6 +72,79 @@ def get_output_and_in_ports(swtid):
     except requests.RequestException as e:
         print(f"请求时发生错误：{e}")
         return []
+
+
+def construct_full_paths():
+    """
+    根据两组流表数据构造完整路径。
+
+    - 路径必须以主机发起，并以主机结束；
+    - 每条路径最少两条记录，最多三条记录；
+    - 匹配第一组流表的 OUTPUT 为 4 时，在第二组中寻找连接点。
+
+    参数:
+        json1 (dict): 第一组流表数据，包含 'data' 键。
+        json2 (dict): 第二组流表数据，包含 'data' 键。
+
+    返回:
+        list: 包含多条完整路径，每条路径由 [{ src: str, dst: str }, ...] 构成。
+    """
+    # 定义端口到设备的映射
+    mapping1 = {1: "h1", 2: "h2", 3: "h3", 4: "s2"}
+    mapping2 = {1: "h4", 2: "h5", 3: "h6", 4: "s1"}
+
+    # 提取数据
+    flows1 = get_output_and_in_ports(1)  # 第一组数据
+    flows2 = get_output_and_in_ports(2)  # 第二组数据
+    # flows1 = json1.get("data", [])
+    # flows2 = json2.get("data", [])
+
+    # 用于标记第二组 JSON 中已经匹配过的条目
+    matched_in_json2 = set()
+
+    # 构造完整路径
+    full_paths = []
+
+    for flow1 in flows1:
+        in_port = flow1.get("in_port")
+        output = int(flow1.get("output", 0))  # 转换 output 为整数
+
+        # 跳过非主机起始的条目
+        if in_port not in mapping1 or not mapping1[in_port].startswith("h"):
+            continue
+
+        # 第一段：主机到交换机或其他主机
+        first_link = {"src": mapping1[in_port], "dst": mapping1[output]}
+
+        # 检查是否需要跨设备（output 为 4 时）
+        if output == 4:
+            for idx, flow2 in enumerate(flows2):
+                if idx in matched_in_json2:  # 跳过已匹配的条目
+                    continue
+
+                in_port2 = flow2.get("in_port")
+                output2 = int(flow2.get("output", 0))
+
+                if in_port2 == 4:
+                    # 第二段：交换机之间的连接
+                    second_link = {"src": "s2", "dst": "s1"}
+
+                    # 第三段：交换机到目标主机
+                    third_link = {"src": mapping2[in_port2], "dst": mapping2[output2]} if output2 in mapping2 else None
+
+                    # 构造完整路径
+                    path = [first_link, second_link]
+                    if third_link:
+                        path.append(third_link)
+
+                    full_paths.append(path)
+                    matched_in_json2.add(idx)  # 标记此条目已匹配
+                    break
+        else:
+            # 仅主机到交换机或主机的路径
+            full_paths.append([first_link])
+
+    return full_paths
 
 
 @app.route('/get_json', methods=['GET'])
@@ -98,3 +172,7 @@ def handle_request():
 if __name__ == "__main__":
     # 启动 Flask 应用
     app.run(host="0.0.0.0", port=6000)
+
+
+# if __name__ == "__main__":
+#     print(f"{get_output_and_in_ports(1)}")
