@@ -150,23 +150,22 @@ def construct_full_paths():
 @app.route('/get_json', methods=['GET'])
 def handle_request():
     """
-    处理 /get_json 请求，返回流表中 in_port 和 OUTPUT 值的结果。
-
-    查询参数：
-        swtid: 交换机编号。
+    处理 /get_json 请求，返回完整路径的结果。
 
     返回：
-        JSON: 结果数据。
+        JSON: 构造的路径数据。
     """
-    swtid = request.args.get('swtid', type=int)
-    if swtid is None:
-        return jsonify({"error": "Missing or invalid 'swtid' parameter"}), 400
+    try:
+        # 调用 construct_full_paths_via_api 获取路径结果
+        paths = construct_full_paths()
 
-    result = get_output_and_in_ports(swtid)
-    if result:
-        return jsonify({"data": result}), 200
-    else:
-        return jsonify({"data": "No new traffic detected"}), 200
+        if paths:
+            return jsonify({"paths": paths}), 200
+        else:
+            return jsonify({"message": "No valid paths detected"}), 200
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
 
 
 if __name__ == "__main__":
