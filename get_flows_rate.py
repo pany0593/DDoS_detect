@@ -3,9 +3,9 @@ import json
 import time
 
 
-def get_aggregate_flow():
+def get_aggregate_flow(swtid):
     # 记得修改对应url 1为switch编号
-    url = "http://192.168.24.134:8080/stats/aggregateflow/1"
+    url = f"http://192.168.24.134:8080/stats/aggregateflow/{swtid}"
     try:
         # 发送 GET 请求
         response = requests.get(url)
@@ -32,11 +32,11 @@ def get_aggregate_flow():
         return None, None
 
 
-def get_flows_rate():
+def get_flows_rate(swtid):
     start_time = time.time()
-    packet_count1, byte_count1 = get_aggregate_flow()
+    packet_count1, byte_count1 = get_aggregate_flow(swtid)
     time.sleep(1)
-    packet_count2, byte_count2 = get_aggregate_flow()
+    packet_count2, byte_count2 = get_aggregate_flow(swtid)
     end_time = time.time()
     # 毫秒
     execution_time = (end_time - start_time)
@@ -53,4 +53,4 @@ def get_flows_rate():
 
 
 if __name__ == "__main__":
-    get_flows_rate()
+    get_flows_rate(1)
